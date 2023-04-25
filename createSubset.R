@@ -8,23 +8,14 @@ library(IncidencePrevalence)
 library(readr)
 library(tidyr)
 
-db_name <- "aurum"
 number_individuals <- 100000
 
-
-server_dbi <- switch(
-  db_name,
-  "gold" = "cdm_gold_202201",
-  "aurum" = "cdm_aurum_p21_000557",
-  "subsetaurum" = "p20_059_cdm_aurum",
-  "pharmetrics" = "cdm_iqvia_pharmetrics_plus_202203"
-)
-
-user <- Sys.getenv("DB_USER")
-password <- Sys.getenv("DB_PASSWORD")
-port <- Sys.getenv("DB_PORT")
-host <- Sys.getenv("DB_HOST")
-dbms <- "postgresql"
+server_dbi <- "..."
+user <- "..."
+password <- "..."
+port <- "..."
+host <- "..."
+dbms <- "..."
 db <- dbConnect(
   RPostgres::Postgres(),
   dbname = server_dbi,
@@ -47,6 +38,7 @@ minimum_counts <- 5
 cdm <- CDMConnector::cdm_from_con(
   con = db,
   cdm_schema = cdm_database_schema,
+  cdm_tables = tbl_group("all"),
   write_schema = results_database_schema,
   cdm_name = db_name
 )

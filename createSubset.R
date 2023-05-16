@@ -27,7 +27,10 @@ db <- dbConnect(
 )
 
 # read all tables
-reference <- lapply(listTables(db, schema_to_subset), function (name) {
+all_tables <- listTables(db, schema_to_subset)
+
+# create a reference
+reference <- lapply(setNames(all_tables, all_tables), function (name) {
   tbl(db, inSchema(schema_to_subset, name, dbms(db)))
 })
 
@@ -40,8 +43,8 @@ subsetPerson <- reference[[person_table]] %>%
   computeQuery(person_table, FALSE, new_schema, TRUE)
 
 # subset rest of tables
-for (table_name in names(reference)) {
-  print(paste0("Subsetting table: ", table_name))
+for (table_name in all_tables[all_tables != person_table]) {
+  cat(paste0("Subsetting ", table_name, ": "))
   tic()
   if (person_identifier %in% colnames(reference[[table_name]])) {
     reference[[table_name]] %>%
@@ -50,7 +53,6 @@ for (table_name in names(reference)) {
       invisible()
   } else {
     reference[[table_name]] %>%
-      inner_join(subsetPerson, by = person_identifier) %>%
       computeQuery(table_name, FALSE, new_schema, TRUE) %>%
       invisible()
   }

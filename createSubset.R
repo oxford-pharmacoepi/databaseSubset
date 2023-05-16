@@ -5,7 +5,7 @@ library(dbplyr)
 library(tictoc)
 
 # parameters 
-number_individuals <- 10000
+number_individuals <- 100000
 schema_to_subset <- "..."
 new_schema <- "..."
 person_identifier <- "..."

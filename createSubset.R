@@ -1,21 +1,22 @@
 library(CDMConnector)
 library(DBI)
-library(log4r)
 library(dplyr)
 library(dbplyr)
-library(here)
-library(IncidencePrevalence)
-library(readr)
-library(tidyr)
+library(tictoc)
 
-number_individuals <- 100000
-
+# parameters 
 server_dbi <- "..."
 user <- "..."
 password <- "..."
 port <- "..."
 host <- "..."
-dbms <- "..."
+number_individuals <- 100000
+schema_to_subset <- "..."
+new_schema <- "..."
+person_identifier <- "..."
+person_table <- "..."
+
+# database connection
 db <- dbConnect(
   RPostgres::Postgres(),
   dbname = server_dbi,
@@ -25,56 +26,33 @@ db <- dbConnect(
   password = password
 )
 
-# The name of the schema that contains the OMOP CDM with patient-level data
-cdm_database_schema <- "public"
+# read all tables
+reference <- lapply(listTables(db, schema_to_subset), function (name) {
+  tbl(db, inSchema(schema_to_subset, name, dbms(db)))
+})
 
-# The name of the schema where results tables will be created 
-results_database_schema <- "public_100k"
-
-# minimum counts that can be displayed according to data governance
-minimum_counts <- 5
-
-# create cdm reference ----
-cdm <- CDMConnector::cdm_from_con(
-  con = db,
-  cdm_schema = cdm_database_schema,
-  cdm_tables = tbl_group("all"),
-  write_schema = results_database_schema,
-  cdm_name = db_name
-)
-
-subsetPerson <- cdm$person %>%
-  dplyr::select("person_id") %>%
-  dplyr::mutate(rand = dbplyr::sql("random()")) %>%
-  dplyr::arrange(.data$rand) %>%
-  compute()
-
-subsetPerson <- subsetPerson %>%
+# subset table person
+subsetPerson <- reference[[person_table]] %>%
+  mutate(rand = dbplyr::sql("random()")) %>%
+  window_order(.data$rand) %>%
   head(number_individuals) %>%
-  compute()
+  select(-"rand") %>%
+  computeQuery(person_table, FALSE, new_schema, TRUE)
 
-subsetPerson <- subsetPerson %>%
-  dplyr::arrange() %>% 
-  dplyr::select("person_id") %>%
-  compute()
-
-for (nam in names(cdm)) {
-  print(nam)
-  tictoc::tic()
-  if ("person_id" %in% colnames(cdm[[nam]])) {
-    xx <- cdm[[nam]] %>%
-      dplyr::inner_join(subsetPerson, by = "person_id") %>%
-      computeQuery(nam, FALSE, "public_100k", TRUE)
+# subset rest of tables
+for (table_name in names(reference)) {
+  print(paste0("Subsetting table: ", table_name))
+  tic()
+  if (person_identifier %in% colnames(reference[[table_name]])) {
+    reference[[table_name]] %>%
+      inner_join(subsetPerson, by = person_identifier) %>%
+      computeQuery(table_name, FALSE, new_schema, TRUE) %>%
+      invisible()
   } else {
-    xx <- cdm[[nam]] %>%
-      computeQuery(nam, FALSE, "public_100k", TRUE)
+    reference[[table_name]] %>%
+      inner_join(subsetPerson, by = person_identifier) %>%
+      computeQuery(table_name, FALSE, new_schema, TRUE) %>%
+      invisible()
   }
-  tictoc::toc()
+  toc()
 }
-
-cdm <- CDMConnector::cdm_from_con(
-  con = db,
-  cdm_schema = "public_100k",
-  write_schema = "results",
-  cdm_name = db_name
-)

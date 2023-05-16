@@ -5,12 +5,7 @@ library(dbplyr)
 library(tictoc)
 
 # parameters 
-server_dbi <- "..."
-user <- "..."
-password <- "..."
-port <- "..."
-host <- "..."
-number_individuals <- 100000
+number_individuals <- 10000
 schema_to_subset <- "..."
 new_schema <- "..."
 person_identifier <- "..."

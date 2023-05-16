@@ -3,7 +3,7 @@
 ## Parameters
 This project can be used to subset an schema based on a set of parameters:
 - `number_individuals`: Number of individuals that will be included in the subset.
-- `schema_to_subset`: Original schema in which we want to base the subset.
+- `schema_to_subset`: Original schema from which the new subset will be created.
 - `new_schema`: Schema where the subset will be created. This schema has to exist in the database.
 - `person_identifier`: Variable that identify different persons.
 - `person_table`: Name of the table that contains a row for each individual in the database. The initial subset will be done in this table.

@@ -12,14 +12,7 @@ person_identifier <- "..."
 person_table <- "..."
 
 # database connection
-db <- dbConnect(
-  RPostgres::Postgres(),
-  dbname = server_dbi,
-  port = port,
-  host = host,
-  user = user,
-  password = password
-)
+db <- dbConnect("...")
 
 # read all tables
 all_tables <- listTables(db, schema_to_subset)

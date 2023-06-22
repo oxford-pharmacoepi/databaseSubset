@@ -25,8 +25,9 @@ reference <- lapply(setNames(all_tables, all_tables), function (name) {
 # subset table person
 subsetPerson <- reference[[person_table]] %>%
   mutate(rand = dbplyr::sql("random()")) %>%
-  window_order(.data$rand) %>%
+  arrange(.data$rand) %>%
   head(number_individuals) %>%
+  compute() %>%
   select(-"rand") %>%
   computeQuery(person_table, FALSE, new_schema, TRUE)
 

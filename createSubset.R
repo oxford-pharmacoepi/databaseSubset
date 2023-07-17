@@ -37,7 +37,7 @@ for (table_name in all_tables[all_tables != person_table]) {
   tic()
   if (person_identifier %in% colnames(reference[[table_name]])) {
     reference[[table_name]] %>%
-      inner_join(subsetPerson, by = person_identifier) %>%
+      inner_join(subsetPerson %>% select(all_of(person_identifier)), by = person_identifier) %>%
       computeQuery(table_name, FALSE, new_schema, TRUE) %>%
       invisible()
   } else {

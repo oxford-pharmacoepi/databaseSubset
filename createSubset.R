@@ -10,6 +10,7 @@ schema_to_subset <- "..."
 new_schema <- "..."
 person_identifier <- "..."
 person_table <- "..."
+TABLESPACE <- ""
 
 # database connection
 db <- dbConnect("...")
@@ -45,5 +46,15 @@ for (table_name in all_tables[all_tables != person_table]) {
       computeQuery(table_name, FALSE, new_schema, TRUE) %>%
       invisible()
   }
+  toc()
+}
+
+#Updating TABLESPACE for database backup
+for (table_name in all_tables) {
+  cat(paste0("Updating TABLESPACE ", table_name, ": "))
+  tic()
+  sql_query <- paste("ALTER TABLE",new_schema,".",table_name, "SET TABLESPACE ", TABLESPACE)
+  dbExecute(db, as.character(sql_query))
+  invisible()
   toc()
 }

@@ -20,11 +20,11 @@ person_table <- "person"
 ## Connect to the database
 Example how to connect to a Postgress Database in the Oxford environment:
 ```r
-db <- dbConnect(
+con <- dbConnect(
   RPostgres::Postgres(),
-  dbname = "cdm_gold_202201",
-  port = "5432",
-  host = "163.1.64.2",
+  dbname = "...",
+  port = "...",
+  host = "...",
   user = "...",
   password = "..."
 )
